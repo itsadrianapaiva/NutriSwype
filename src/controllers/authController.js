@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV } from "../config/env.js";
 
 const createToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  return jwt.sign({ id: user._id }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
   });
 };
 
@@ -27,7 +28,7 @@ export const register = async (req, res) => {
     // Set cookie (secure, HTTP-only)
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      secure: NODE_ENV === "production", // Use secure cookies in production
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       sameSite: "strict", // CSRF protection
     });
@@ -63,7 +64,7 @@ export const login = async (req, res) => {
     //Set cookie
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      secure: NODE_ENV === "production", // Use secure cookies in production
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       sameSite: "None", // allow cross-site requests
     });
@@ -88,7 +89,7 @@ export const logout = (req, res) => {
     // Clear cookie
     res.cookie("jwt", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: NODE_ENV === "production",
       maxAge: 0,
       sameSite: "None",
     });
