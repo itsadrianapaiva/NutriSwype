@@ -28,7 +28,6 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 //Health check endpoint
 app.get("/health", (req, res) => {
-  console.log("Health check request received");
   res.status(200).json({
     status: "OK",
     timestamp: new Date().toISOString(),
@@ -37,16 +36,25 @@ app.get("/health", (req, res) => {
 });
 
 //API routes
+console.log("Mounting routes...");
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// 404 handler
-app.use("*", (req, res) => {
-  res.status(404).json({
-    path: req.originalUrl,
-    message: "Route not found",
-  });
-});
+// // 404 handler
+// console.log('Mounting 404 handler...');
+// try {
+//   app.use('*', (req, res) => {
+//     console.log('404 handler hit for:', req.originalUrl);
+//     res.status(404).json({
+//       path: req.originalUrl,
+//       message: 'Route not found',
+//     });
+//   });
+//   console.log('Mounted 404 handler');
+// } catch (err) {
+//   console.error('404 handler mounting error:', err.message, err.stack);
+//   process.exit(1);
+// }
 
 // Global error handler
 app.use(errorHandler);

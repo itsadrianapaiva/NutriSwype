@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import app from "./src/app.js";
 import { NODE_ENV } from "./src/config/env.js";
 
+
 //Load environment variables
 dotenv.config();
 
@@ -10,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 // Start server
 const server = app.listen(PORT, () => {
-  console.log(`NutriSype is running on port ${PORT}`);
+  console.log(`NutriSwype is running on port ${PORT}`);
   console.log(`Environment: ${NODE_ENV}` || "development");
 });
 
