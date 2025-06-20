@@ -20,7 +20,7 @@ export const register = async (req, res) => {
     }
 
     //Create and save user
-    const user = await User.create({ email, password, name });
+    const user = await User.create({ email, password, name, profile });
 
     // JWT creation
     const token = createToken(user._id);
@@ -35,6 +35,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
+      user: { id: user._id, email: user.email, name: user.name },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error during registration" });
@@ -74,7 +75,7 @@ export const login = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        token: token,
+        name: user.name,
       },
     });
   } catch (error) {
@@ -91,7 +92,7 @@ export const logout = (req, res) => {
       httpOnly: true,
       secure: NODE_ENV === "production",
       maxAge: 0,
-      sameSite: "None",
+      sameSite: "Strict",
     });
 
     res.status(200).json({ message: "Logout successful" });

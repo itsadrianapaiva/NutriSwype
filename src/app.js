@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.js";
@@ -14,6 +15,7 @@ const app = express();
 connectDB();
 
 //Security Middleware
+app.use(helmet());
 app.use(
   cors({
     origin: "http://localhost:3000", //frontend URL
@@ -21,15 +23,14 @@ app.use(
   })
 );
 app.use(cookieParser());
-
-// Body parsing middleware
 app.use(express.json({ limit: "10mb" })); // Increase limit for larger payloads
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 //Health check endpoint
 app.get("/health", (req, res) => {
+  console.log("Health check request received");
   res.status(200).json({
-    statsus: "OK",
+    status: "OK",
     timestamp: new Date().toISOString(),
     service: "nutriswype-backend",
   });

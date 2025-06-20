@@ -5,17 +5,25 @@ export const getMe = (req, res) => {
   res.status(200).json({ success: true, data: req.user });
 };
 
-// PUT /api/users/profile
+// PATCH /api/users/profile
 export const updateProfile = async (req, res) => {
   try {
-    const updates = req.body;
+    const { name, profile } = req.body;
+    const updateData = { name, profile };
 
     // Update user profile
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: { profile: { ...req.user.profile, ...updates } } },
+      { $set: updateData },
       { new: true, runValidators: true }
     ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -25,7 +33,7 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     req.status(500).json({
       success: false,
-      message: "Failed to update profile",
+      errors: ["Failed to update profile"],
     });
   }
 };
@@ -59,7 +67,7 @@ export const getDashboard = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to load dashboard",
+      errors: ["Failed to load dashboard"],
     });
   }
 };
@@ -67,12 +75,11 @@ export const getDashboard = async (req, res) => {
 // Helper function to calculate profile completion percentage
 const calculateProfileCompletion = (user) => {
   let completed = 0;
-  const total = 4; // Total number of profile fields to check
+  const total = 3; // Total number of profile fields to check
 
+  if (user.name && user.name !== "Anonymous") completed++;
   if (user.profile.dietaryRestrictions?.length > 0) completed++;
-  if (user.profile.nutritionGoals?.dailyCalories > 0) completed++;
-  if (user.profile.preferences?.cuisineTypes?.size > 0) completed++;
-  if (user.profile.confidenceScores?.cuisineTypes > 0) completed++;
+  if (user.profile.nutritionGoals?.dailyCalories !== 2000) completed++;
 
   return Math.round((completed / total) * 100);
 };

@@ -37,13 +37,28 @@ const userSchema = new mongoose.Schema(
       nutritionGoals: {
         dailyCalories: {
           type: Number,
-          min: 1000,
-          max: 5000,
+          min: [1000, "Calories must be at least 1000"],
+          max: [5000, "Calories cannot exceed 5000"],
           default: 2000,
         },
-        proteinPercentage: { type: Number, min: 10, max: 50, default: 25 },
-        carbPercentage: { type: Number, min: 20, max: 70, default: 45 },
-        fatPercentage: { type: Number, min: 10, max: 50, default: 30 },
+        proteinPercentage: {
+          type: Number,
+          min: [10, "Protein must be at least 10%"],
+          max: 50,
+          default: 25,
+        },
+        carbPercentage: {
+          type: Number,
+          min: [20, "Carbs must be at least 20%"],
+          max: 70,
+          default: 45,
+        },
+        fatPercentage: {
+          type: Number,
+          min: [10, "Fat must be at least 10%"],
+          max: 50,
+          default: 30,
+        },
       },
       preferences: {
         cuisineTypes: {
@@ -62,40 +77,19 @@ const userSchema = new mongoose.Schema(
           default: new Map(),
         },
       },
-      confidenceScores: {
-        cuisineTypes: {
-          type: Number,
-          min: 0,
-          max: 1,
-          default: 0,
-        },
-        ingredients: {
-          type: Number,
-          min: 0,
-          max: 1,
-          default: 0,
-        },
-        cookingMethods: {
-          type: Number,
-          min: 0,
-          max: 1,
-          default: 0,
-        },
-      },
     },
   },
   {
     timestamps: true,
-    toJSON: { transform: removePassword },
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.password;
+        delete ret.__v; // Remove version key if present
+        return ret;
+      },
+    },
   }
 );
-
-// Remove password from the response
-const removePassword = (doc, ret) => {
-  delete ret.password;
-  delete ret.__v; // Remove version key if present
-  return ret;
-};
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
@@ -110,24 +104,23 @@ userSchema.pre("save", async function (next) {
   }
 });
 
+// Validate nutritional percentages sum to 100
+userSchema.pre("save", async function (next) {
+  const { proteinPercentage, carbPercentage, fatPercentage } =
+    this.profile.nutritionGoals;
+  const total = proteinPercentage + carbPercentage + fatPercentage;
+
+  if (Math.abs(total - 100) > 1) {
+    //allow 1% for rounding
+    return next(new Error("Nutritional percentages must sum to 100"));
+  }
+  next();
+});
+
 // Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
-
-// Validate nutritional percentages sum to 100
-userSchema.pre("save"),
-  function (next) {
-    const { proteinPercentage, carbPercentage, fatPercentage } =
-      this.profile.nutritionGoals;
-    const totalPercentage = proteinPercentage + carbPercentage + fatPercentage;
-
-    if (Math.abs(total - 100) > 1) {
-      //allow 1% for rounding
-      return next(new Error("Nutritional percentages must sum to 100"));
-    }
-    next();
-  };
 
 const User = mongoose.model("User", userSchema);
 
