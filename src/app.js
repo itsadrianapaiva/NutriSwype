@@ -12,7 +12,7 @@ import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-connectDB();
+// connectDB();
 
 //Security Middleware
 app.use(helmet());
@@ -36,27 +36,42 @@ app.get("/health", (req, res) => {
 });
 
 //API routes
-console.log("Mounting routes...");
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+// app.use("/api/auth", authRoutes);
+// app.use("/api/users", userRoutes);
+console.log('Mounting routes...');
+try {
+  console.log('Registering /api/auth routes:', authRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
+  app.use('/api/auth', authRoutes);
+  console.log('Mounted /api/auth');
+  console.log('Registering /api/users routes:', userRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
+  app.use('/api/users', userRoutes);
+  console.log('Mounted /api/users');
+} catch (err) {
+  console.error('Route mounting error:', err.message, err.stack);
+  process.exit(1);
+}
 
 // // 404 handler
-// console.log('Mounting 404 handler...');
-// try {
-//   app.use('*', (req, res) => {
-//     console.log('404 handler hit for:', req.originalUrl);
-//     res.status(404).json({
-//       path: req.originalUrl,
-//       message: 'Route not found',
-//     });
-//   });
-//   console.log('Mounted 404 handler');
-// } catch (err) {
-//   console.error('404 handler mounting error:', err.message, err.stack);
-//   process.exit(1);
-// }
+console.log('Mounting 404 handler...');
+app.use((req, res) => {
+  console.log('404 handler hit for:', req.originalUrl)
+  res.status(404).json({
+    path: req.originalUrl,
+    message: 'Route not found'
+  })
+})
+console.log('Mounted 404 handler')
+
 
 // Global error handler
 app.use(errorHandler);
+
+// Connect to database
+console.log('Starting database connection...');
+connectDB()
+  .catch((err) => {
+    console.error('Database connection failed:', err.message, err.stack);
+    process.exit(1);
+  });
 
 export default app;
