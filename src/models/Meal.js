@@ -42,7 +42,7 @@ const mealSchema = new mongoose.Schema(
         required: true,
         min: [0, "Carbs cannot be negative"],
       },
-      fats: {
+      fat: {
         type: Number,
         required: true,
         min: [0, "Fats cannot be negative"],

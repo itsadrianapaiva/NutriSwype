@@ -10,7 +10,7 @@ const createToken = (user) => {
 
 // Register new user
 // route POST /api/auth/register
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
     // Check if user exists
@@ -21,6 +21,11 @@ export const register = async (req, res) => {
 
     //Create and save user
     const user = await User.create({ email, password, name });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User creation failed" });
+    }
 
     // JWT creation
     const token = createToken(user._id);
@@ -34,30 +39,32 @@ export const register = async (req, res) => {
     });
 
     res.status(201).json({
+      success: true,
       message: "User registered successfully",
       user: { id: user._id, email: user.email, name: user.name },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error during registration" });
+    console.error("Registration error:", error.message, error.stack);
+    if (error.code === 11000) {
+      console.log("Duplicate key error:", email);
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already exists" });
+    }
+    next(error);
   }
 };
 
 // Login user
 // route POST /api/auth/login
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Check for user
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Password is incorrect" });
+    // Check for user and match password
+    const user = await User.findOne({ email }).select("+password");
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({success: false, message: "Invalid email or password" });
     }
 
     const token = createToken(user._id);
@@ -71,6 +78,7 @@ export const login = async (req, res) => {
     });
 
     res.status(200).json({
+      success: true,
       message: "Login successful",
       user: {
         id: user._id,
@@ -80,13 +88,14 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error during login" });
+    console.error("Login error:", error.message, error.stack);
+    next(error);
   }
 };
 
 // Logout user
 // route POST /api/auth/logout
-export const logout = (req, res) => {
+export const logout = (req, res, next) => {
   try {
     // Clear cookie
     res.cookie("jwt", "", {
@@ -96,8 +105,9 @@ export const logout = (req, res) => {
       sameSite: "Strict",
     });
 
-    res.status(200).json({ message: "Logout successful" });
+    res.status(200).json({success: true, message: "Logout successful" });
   } catch (error) {
-    res.status(500).json({ message: "Logout failed" });
+    console.error("Logout error:", error.message, error.stack);
+    next(error);
   }
 };

@@ -5,33 +5,6 @@ const registerSchema = Joi.object({
   name: Joi.string().min(1).max(50).default("Anonymous"),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  profile: Joi.object({
-    dietaryRestrictions: Joi.array()
-      .items(
-        Joi.string().valid(
-          "gluten-free",
-          "dairy-free",
-          "nut-free",
-          "vegan",
-          "vegetarian",
-          "paleo",
-          "keto"
-        )
-      )
-      .default([]),
-    nutritionGoals: Joi.object({
-      dailyCalories: Joi.number().min(1000).max(5000).default(2000),
-      proteinPercentage: Joi.number().min(10).max(50).default(25),
-      carbPercentage: Joi.number().min(20).max(50).default(25),
-      fatPercentage: Joi.number().min(10).max(50).default(25),
-    }).default(),
-    preferences: Joi.object({
-      cuisineTypes: Joi.object()
-        .pattern(Joi.string(), Joi.number())
-        .default({}),
-      ingredients: Joi.object().pattern(Joi.string(), Joi.number()).default({}),
-    }).default(),
-  }).default(),
 });
 
 const loginSchema = Joi.object({
@@ -68,6 +41,63 @@ const updateProfileSchema = Joi.object({
   }).optional(),
 });
 
+const swipeSchema = Joi.object({
+  mealId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "Invalid meal ID",
+    "string.length": "Invalid meal ID length",
+  }),
+  action: Joi.string().valid("like", "dislike").required().messages({
+    "any.only": 'Action must be either "like" or "dislike"',
+  }),
+});
+
+const createMealSchema = Joi.object({
+  name: Joi.string().min(1).required().messages({
+    "string.empty": "Meal name is required",
+  }),
+  description: Joi.string().optional().allow(""),
+  image: Joi.string().uri().optional().allow(""),
+  ingredients: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().min(1).required().messages({
+          "string.empty": "Ingredient name is required",
+        }),
+        quantity: Joi.number().min(0).required().messages({
+          "number.min": "Ingredients quantity must be non-negative",
+        }),
+        unit: Joi.string().optional().allow(""),
+      })
+    )
+    .optional(),
+  nutrition: Joi.object({
+    calories: Joi.number().min(0).required().messages({
+      "number.min": "Calories must non-negative",
+    }),
+    protein: Joi.number().min(0).required().optional(),
+    carbs: Joi.number().min(0).required().optional(),
+    fat: Joi.number().min(0).required().optional(),
+  }).required(),
+  dietaryTags: Joi.array()
+    .items(
+      Joi.string().valid(
+        "gluten-free",
+        "dairy-free",
+        "nut-free",
+        "vegan",
+        "vegetarian",
+        "paleo",
+        "keto"
+      )
+    )
+    .optional(),
+  cuisineType: Joi.string().optional().allow(""),
+  cookingTime: Joi.number().min(0).optional().messages({
+    "number.min": "Cooking time cannot be negative",
+  }),
+  instructions: Joi.array().items(Joi.string().optional()),
+});
+
 // Custom validation for nutrition percentages
 const validateNutritionPercentages = (nutritionGoals) => {
   if (!nutritionGoals) return [];
@@ -89,15 +119,14 @@ export const validateUser = (data, type = "register") => {
       register: registerSchema,
       login: loginSchema,
       updateProfile: updateProfileSchema,
+      swipe: swipeSchema,
+      createMeal: createMealSchema,
     }[type] || registerSchema;
   const { error, value } = schema.validate(data, { abortEarly: false });
   const errors = error ? error.details.map((err) => err.message) : [];
 
   // Custom validation for nutritionalGoals (if present)
-  if (
-    ["register", "updateProfile"].includes(type) &&
-    data.profile?.nutritionalGoals
-  ) {
+  if (["updateProfile"].includes(type) && data.profile?.nutritionalGoals) {
     errors.push(...validateNutritionPercentages(data.profile.nutritionalGoals));
   }
 

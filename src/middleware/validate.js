@@ -4,7 +4,7 @@ export const validate = (type) => (req, res, next) => {
   const { errors, value } = validateUser(req.body, type);
 
   if (errors.length > 0) {
-    return res.status(400).json({ errors });
+    return res.status(400).json({ success: false, errors });
   }
 
   req.body = value; //use sanitized and validated data

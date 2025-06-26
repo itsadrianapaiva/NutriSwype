@@ -9,6 +9,8 @@ import errorHandler from "./middleware/errorHandler.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import mealRoutes from "./routes/mealRoutes.js";
+import swipeRoutes from "./routes/swipeRoutes.js";
 
 const app = express();
 
@@ -38,6 +40,8 @@ app.get("/health", (req, res) => {
 //API routes
 // app.use("/api/auth", authRoutes);
 // app.use("/api/users", userRoutes);
+// app.use("/api/meals", mealRoutes);
+// app.use("/api/swipes", swipeRoutes);
 console.log('Mounting routes...');
 try {
   console.log('Registering /api/auth routes:', authRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
@@ -46,6 +50,12 @@ try {
   console.log('Registering /api/users routes:', userRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
   app.use('/api/users', userRoutes);
   console.log('Mounted /api/users');
+  console.log('Registering /api/swipes routes:', swipeRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
+  app.use('/api/swipes', swipeRoutes);
+  console.log('Mounted /api/swipes');
+  console.log('Registering /api/meals routes:', mealRoutes.stack.map(r => r.route ? r.route.path : 'middleware'));
+  app.use('/api/meals', mealRoutes);
+  console.log('Mounted /api/meals');
 } catch (err) {
   console.error('Route mounting error:', err.message, err.stack);
   process.exit(1);

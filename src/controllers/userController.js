@@ -1,20 +1,41 @@
 import User from "../models/User.js";
 
 // GET /api/users/me
-export const getMe = (req, res) => {
-  res.status(200).json({ success: true, data: req.user });
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        profile: user.profile || {},
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving user:", error.message, error.stack);
+    next(error);
+  }
 };
 
 // PATCH /api/users/profile
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res, next) => {
   try {
     const { name, profile } = req.body;
     const updateData = { name, profile };
 
     // Update user profile
     const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { $set: updateData },
+      req.user.id,
+      { name, profile },
       { new: true, runValidators: true }
     ).select("-password");
 
@@ -27,21 +48,30 @@ export const updateProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Profile updated successfully",
-      data: user,
+      message: "Profile updated",
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        profile: user.profile || {},
+      }
     });
   } catch (error) {
-    req.status(500).json({
-      success: false,
-      errors: ["Failed to update profile"],
-    });
+    console.error("Profile update error:", error.message, error.stack);
+    next(error);
   }
 };
 
 // GET /api/users/dashboard
-export const getDashboard = async (req, res) => {
+export const getDashboard = async (req, res, next) => {
   try {
-    const user = req.user;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     // Calculate profile completion percentage
     const profileCompletion = calculateProfileCompletion(user);
@@ -56,19 +86,19 @@ export const getDashboard = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {
+      dashboard: {
         user: {
+          id: user._id,
+          name: user.name,
           email: user.email,
-          profile: user.profile,
+          dietaryRestrictions: user.profile?.dietaryRestrictions || [],
         },
         stats,
       },
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      errors: ["Failed to load dashboard"],
-    });
+    console.error("Dashboard retrieval error:", error.message, error.stack);
+    next(error);
   }
 };
 
