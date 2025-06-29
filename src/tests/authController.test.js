@@ -128,4 +128,27 @@ describe("Auth Controller", () => {
       );
     });
   });
+
+  describe("logout", () => {
+    it("should logout the user", async () => {
+      const user = await User.create({
+        email: "test@test.com",
+        password: "123456",
+        name: "Test",
+      });
+      const req = mockRequest({}, user);
+      const res = mockResponse();
+
+      await logout(req, res, mockNext);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Logout successful",
+        })
+      );
+      expect(res.cookie).toHaveBeenCalledWith();
+    });
+  });
 });
