@@ -29,7 +29,7 @@ export const createMeal = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Meal created",
+      message: "Meal created successfully",
       meal: {
         id: meal._id,
         name: meal.name,
@@ -45,6 +45,12 @@ export const createMeal = async (req, res, next) => {
 export const getMeals = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.status = 404;
+      return next(error);
+    }
 
     const dietaryRestrictions = user.profile?.dietaryRestrictions || [];
 
