@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import {
   getMe,
   updateProfile,
@@ -83,8 +82,11 @@ describe("User Controller", () => {
             name: "Updated Test",
             profile: expect.objectContaining({
               dietaryRestrictions: ["vegan"],
-              nutritionalGoals: expect.objectContaining({
-                dailyCalories: 1800,
+              nutritionGoals: expect.objectContaining({
+                dailyCalories: 2000,
+                proteinPercentage: 25,
+                carbPercentage: 45,
+                fatPercentage: 30,
               }),
             }),
           }),

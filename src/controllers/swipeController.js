@@ -6,15 +6,15 @@ export const createSwipe = async (req, res, next) => {
 
     const swipe = await Swipe.create({
       user: req.user.id,
-      meal: mealId,
-      action,
+      meal: req.body.mealId,
+      action: req.body.action,
     });
     res.status(201).json({
       success: true,
-      message: "Swipe recorded",
+      message: "Swipe recorded successfully",
       swipe: {
-        id: swipe._id,
-        meal: swipe.meal,
+        id: swipe._id.toString(),
+        meal: swipe.meal.toString(),
         action: swipe.action,
       },
     });
@@ -34,7 +34,7 @@ export const getUserSwipes = async (req, res, next) => {
   try {
     const swipes = await Swipe.find({
       user: req.user.id,
-    }).populate("meal", "name dietaryTags");
+    }).populate("meal");
 
     res.status(200).json({
       success: true,

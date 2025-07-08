@@ -1,8 +1,9 @@
-module.exports = {
+export default {
   preset: "@shelf/jest-mongodb",
   testEnvironment: "node",
   coverageDirectory: "coverage",
   coverageReporters: ["text", "html"],
   testMatch: ["**/?(*.)+(spec|test).js"],
-  setupFilesAfterEnv: ["./jest.setup.js"],
+  setupFilesAfterEnv: ["./src/jest.setup.js"],
+  transform: { "^.+\\.js$": "babel-jest" },
 };

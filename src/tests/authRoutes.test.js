@@ -22,7 +22,7 @@ describe("Auth routes", () => {
     expect(response.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: "User created successfully",
+        message: "User registered successfully",
         user: expect.objectContaining({
           email: "test@test.com",
           name: "Test",

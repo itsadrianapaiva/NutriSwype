@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import { register, login } from "../controllers/authController.js";
+import { register, login, logout } from "../controllers/authController.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV } from "../config/env.js";
 
 //Mock request and response
 const mockRequest = (body = {}, user = null) => ({ body, user });
@@ -36,7 +35,7 @@ describe("Auth Controller", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "User created successfully",
+          message: "User registered successfully",
           user: expect.objectContaining({
             email: "test@test.com",
             name: "Test",
@@ -102,7 +101,11 @@ describe("Auth Controller", () => {
           }),
         })
       );
-      expect(res.cookie).toHaveBeenCalledWith();
+      expect(res.cookie).toHaveBeenCalledWith(
+        "jwt",
+        expect.any(String),
+        expect.any(Object)
+      );
     });
 
     it("should reject invalid credentials", async () => {
@@ -130,17 +133,17 @@ describe("Auth Controller", () => {
   });
 
   describe("logout", () => {
-    it("should logout the user", async () => {
-      const user = await User.create({
-        email: "test@test.com",
-        password: "123456",
-        name: "Test",
-      });
-      const req = mockRequest({}, user);
+    it("should clear JWT cookie and return success", async () => {
+      const req = mockRequest();
       const res = mockResponse();
 
       await logout(req, res, mockNext);
 
+      expect(res.cookie).toHaveBeenCalledWith(
+        "jwt",
+        "",
+        expect.objectContaining({ maxAge: 0 })
+      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -148,7 +151,7 @@ describe("Auth Controller", () => {
           message: "Logout successful",
         })
       );
-      expect(res.cookie).toHaveBeenCalledWith();
+      expect(mockNext).not.toHaveBeenCalled();
     });
   });
 });

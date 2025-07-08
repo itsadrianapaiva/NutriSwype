@@ -1,0 +1,11 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": { "node": "current" }
+      }
+    ]
+  ]
+}
+// This Babel configuration file is set up to transpile modern JavaScript
