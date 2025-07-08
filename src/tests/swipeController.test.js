@@ -120,7 +120,7 @@ describe("Swipe Controller", () => {
           success: true,
           swipes: expect.arrayContaining([
             expect.objectContaining({
-                action: "like",
+              action: "like",
               user: req.user.id,
               meal: expect.objectContaining({
                 name: "Test Meal",

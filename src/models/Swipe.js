@@ -20,10 +20,9 @@ const swipeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    indexes: [
-      { key: { user: 1, meal: 1 }, unique: true }, // Ensure one swipe per user-meal pair
-    ],
   }
 );
+
+swipeSchema.index({ user: 1, meal: 1 }, { unique: true });
 
 export default mongoose.model("Swipe", swipeSchema);
