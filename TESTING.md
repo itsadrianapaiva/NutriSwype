@@ -15,6 +15,7 @@ Tests are organized by controller (`authController.test.js`, `userController.tes
 - **swipeController.test.js**: Verifies swipe creation and retrieval.
 - **mealController.test.js**: Ensures meal creation and filtering.
 - **middleware.test.js**: Tests JWT authentication and input validation.
+- **authRoutes.test.js**: 
 
 ## Coverage
 - Target: 80-90% coverage for controllers and middleware.
