@@ -1,34 +1,21 @@
-import Swipe from "../models/Swipe.js";
+import {
+  createSwipeForUser,
+  getSwipesForUser,
+} from "../services/swipeService.js";
 
+//POST /api/swipes
 export const createSwipe = async (req, res, next) => {
   try {
-    const { mealId, action } = req.body;
-
-    const existingSwipe = await Swipe.findOne({
-      user: req.user.id,
-      meal: mealId,
+    const payload = await createSwipeForUser({
+      userId: req.user.id,
+      mealId: req.body.mealId,
+      action: req.body.action,
     });
 
-    if (existingSwipe) {
-      return res.status(400).json({
-        success: false,
-        message: "Swipe already exists for this meal",
-      });
-    }
-
-    const swipe = await Swipe.create({
-      user: req.user.id,
-      meal: req.body.mealId,
-      action: action,
-    });
     res.status(201).json({
       success: true,
       message: "Swipe recorded successfully",
-      swipe: {
-        id: swipe._id.toString(),
-        meal: swipe.meal.toString(),
-        action: swipe.action,
-      },
+      swipe: payload,
     });
   } catch (error) {
     console.error("Swipe creation error:", error.message, error.stack);
@@ -36,26 +23,14 @@ export const createSwipe = async (req, res, next) => {
   }
 };
 
+//GET /api/swipes/my-swipes
 export const getUserSwipes = async (req, res, next) => {
   try {
-    const swipes = await Swipe.find({
-      user: req.user.id,
-    }).populate("meal");
-
-    const payload = swipes.map((swipe) => ({
-      id: swipe._id.toString(),
-      user: swipe.user.toString(),
-      action: swipe.action,
-      meal: {
-        id: swipe.meal._id.toString(),
-        name: swipe.meal.name,
-        dietaryTags: swipe.meal.dietaryTags,
-      },
-    }));
+    const swipes = await getSwipesForUser(req.user.id);
 
     res.status(200).json({
       success: true,
-      swipes: payload,
+      swipes,
     });
   } catch (error) {
     console.error("Get swipes error:", error.message, error.stack);
