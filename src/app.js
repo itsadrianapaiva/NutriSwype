@@ -72,7 +72,6 @@ app.use((req, res) => {
 })
 console.log('Mounted 404 handler')
 
-
 // Global error handler
 app.use(errorHandler);
 

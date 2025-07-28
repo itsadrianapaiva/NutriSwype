@@ -23,7 +23,7 @@ describe("Auth Controller", () => {
   describe("register", () => {
     it("should register a new user", async () => {
       const req = mockRequest({
-        email: "test@test.com",
+        email: `test+${Date.now()}@test.com`,
         password: "123456",
         name: "Test",
       });

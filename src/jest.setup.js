@@ -10,6 +10,11 @@ beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URI);
 });
 
+afterEach(async () => {
+  // Clear the database after each test
+  await mongoose.connection.db.dropDatabase();
+})
+
 afterAll(async () => {
   // Disconnect from MongoDB after tests are done
   await mongoose.connection.close();

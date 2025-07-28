@@ -22,7 +22,7 @@ describe("User Controller", () => {
   beforeEach(async () => {
     await User.deleteMany({});
     const user = await User.create({
-      email: "test@test.com",
+      email: "test-usercontroller@test.com",
       password: "123456",
       name: "Test",
     });

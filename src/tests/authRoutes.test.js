@@ -2,12 +2,22 @@ import request from "supertest";
 import express from "express";
 import mongoose from "mongoose";
 import authRoutes from "../routes/authRoutes.js";
+import User from "../models/User.js";
 
 const app = express();
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 
 describe("Auth routes", () => {
+  beforeAll(async () => {
+    await User.deleteMany({});
+    await User.create({
+      name: "Test User",
+      email: "test@test.com",
+      password: await bcrypt.hash("123456", 10),
+    });
+  });
+
   beforeEach(async () => {
     await mongoose.connection.collection("users").deleteMany({});
   });
